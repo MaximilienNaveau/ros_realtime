@@ -35,14 +35,19 @@
 #ifndef LOCKFREE_OBJECT_POOL_H
 #define LOCKFREE_OBJECT_POOL_H
 
-#include "free_list.h"
-
-#include <ros/assert.h>
-
+#include <stdio.h>
+#include <errno.h>
+#include <string.h>
+#include <assert.h>
 #include <boost/shared_ptr.hpp>
+#include "lockfree/free_list.h"
 
 namespace lockfree
 {
+
+#define clean_errno() (errno == 0 ? "None" : strerror(errno))
+#define log_error(M, ...) fprintf(stderr, "[ERROR] (%s:%d: errno: %s) " M "\n", __FILE__, __LINE__, clean_errno(), ##__VA_ARGS__)
+#define assertf(A, M, ...) if(!(A)) {log_error(M, ##__VA_ARGS__); assert(A); }
 
 template<typename T>
 class ObjectPool;
@@ -150,7 +155,7 @@ public:
   pointer allocate(size_type n, SPAllocator<void>::const_pointer hint = 0)
   {
     uint32_t to_alloc = n * sizeof(T);
-    ROS_ASSERT_MSG(to_alloc <= (sizeof(SPStorage) - used_), "to_alloc=%d, size=%u, used=%d", to_alloc, (uint32_t)sizeof(SPStorage), used_);
+    assertf(to_alloc <= (sizeof(SPStorage) - used_), "to_alloc=%d, size=%u, used=%d", to_alloc, (uint32_t)sizeof(SPStorage), used_);
 
     pointer p = reinterpret_cast<pointer>(block_->data + used_);
     used_ += to_alloc;
@@ -160,7 +165,7 @@ public:
   {
     uint32_t to_free = n * sizeof(T);
     used_ -= to_free;
-    ROS_ASSERT_MSG(used_ >= -(int32_t)sizeof(SPStorage), "to_free=%d, size=%u, used=%d", to_free, (uint32_t)sizeof(SPStorage), used_);
+    assertf(used_ >= -(int32_t)sizeof(SPStorage), "to_free=%d, size=%u, used=%d", to_free, (uint32_t)sizeof(SPStorage), used_);
 
     if (used_ == 0 || used_ < 0)
     {
@@ -262,7 +267,7 @@ public:
    */
   void initialize(uint32_t count, const T& tmpl)
   {
-    ROS_ASSERT(!initialized_);
+    assert(!initialized_);
     freelist_.initialize(sizeof(T), count);
     freelist_.template constructAll<T>(tmpl);
     sp_storage_freelist_.initialize(sizeof(detail::SPStorage), count);
@@ -277,7 +282,7 @@ public:
    */
   boost::shared_ptr<T> allocateShared()
   {
-    ROS_ASSERT(initialized_);
+    assert(initialized_);
 
     T* item = static_cast<T*>(freelist_.allocate());
     if (!item)
@@ -318,7 +323,7 @@ public:
    */
   T* removeShared(const boost::shared_ptr<T>& t)
   {
-    ROS_ASSERT(freelist_.owns(t.get()));
+    assert(freelist_.owns(t.get()));
 
     Deleter* d = boost::get_deleter<Deleter>(t);
     d->free_ = false;
@@ -332,7 +337,7 @@ public:
    */
   T const* removeShared(const boost::shared_ptr<T const>& t)
   {
-    ROS_ASSERT(freelist_.owns(t.get()));
+    assert(freelist_.owns(t.get()));
 
     Deleter* d = boost::get_deleter<Deleter>(t);
     d->free_ = false;
@@ -379,7 +384,7 @@ private:
   template<typename T2>
   boost::shared_ptr<T2> makeSharedImpl(T2* t)
   {
-    ROS_ASSERT(freelist_.owns(t));
+    assert(freelist_.owns(t));
 
     detail::SPStorage* sp_storage = static_cast<detail::SPStorage*>(sp_storage_freelist_.allocate());
 

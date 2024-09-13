@@ -36,7 +36,6 @@
 #ifndef LOCKFREE_FREE_LIST_H
 #define LOCKFREE_FREE_LIST_H
 
-#include <ros/assert.h>
 #include <ros/atomic.h>
 
 #if FREE_LIST_DEBUG
@@ -120,7 +119,7 @@ public:
   template<typename T>
   void constructAll(const T& tmpl)
   {
-    ROS_ASSERT(sizeof(T) <= block_size_);
+    assert(sizeof(T) <= block_size_);
     for (uint32_t i = 0; i < block_count_; ++i)
     {
       new (blocks_ + (i * block_size_)) T(tmpl);
@@ -137,7 +136,7 @@ public:
   template<typename T>
   void constructAll()
   {
-    ROS_ASSERT(sizeof(T) <= block_size_);
+    assert(sizeof(T) <= block_size_);
     for (uint32_t i = 0; i < block_count_; ++i)
     {
       new (blocks_ + (i * block_size_)) T();
@@ -151,7 +150,7 @@ public:
   template<typename T>
   void destructAll()
   {
-    ROS_ASSERT(sizeof(T) <= block_size_);
+    assert(sizeof(T) <= block_size_);
     for (uint32_t i = 0; i < block_count_; ++i)
     {
       reinterpret_cast<T*>(blocks_ + (i * block_size_))->~T();

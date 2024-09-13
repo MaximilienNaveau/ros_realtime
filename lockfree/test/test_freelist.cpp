@@ -33,16 +33,16 @@
 *********************************************************************/
 
 #include <gtest/gtest.h>
+#include <set>
+#include <chrono>
+#include <thread>
+#include <barrier>
 
 //#define FREE_LIST_DEBUG 1
 #include "lockfree/free_list.h"
 
-#include <boost/thread.hpp>
-
-#include <set>
-#include "ros/time.h"
-
 using namespace lockfree;
+using namespace std::chrono_literals;
 
 TEST(FreeList, oneElement)
 {
@@ -90,7 +90,7 @@ TEST(FreeList, multipleElements)
 }
 
 #if FREE_LIST_DEBUG
-boost::mutex g_debug_mutex;
+std::mutex g_debug_mutex;
 std::vector<FreeList::Debug> g_debug;
 
 std::ostream& operator<<(std::ostream& o, const FreeList::Debug::Item& i)
@@ -114,20 +114,20 @@ std::ostream& operator<<(std::ostream& o, const FreeList::Debug::Item& i)
 struct PerfCounter
 {
   PerfCounter()
-  : start(ros::WallTime::now())
+  : start(std::chrono::high_resolution_clock::now())
   {}
 
-  double elapsed() { return (ros::WallTime::now() - start).toSec(); }
-  void reset() { start = ros::WallTime::now(); }
+  double elapsed() { return (std::chrono::high_resolution_clock::now() - start).count(); }
+  void reset() { start = std::chrono::high_resolution_clock::now(); }
 
-  ros::WallTime start;
+  std::chrono::high_resolution_clock::time_point start;
 };
 
-void threadFunc(FreeList& pool, ros::atomic<bool>& done, ros::atomic<bool>& failed, boost::barrier& b)
+void threadFunc(FreeList& pool, ros::atomic<bool>& done, ros::atomic<bool>& failed, std::barrier& b)
 {
   b.wait();
 
-  //ROS_INFO_STREAM("Thread " << boost::this_thread::get_id() << " starting");
+  //ROS_INFO_STREAM("Thread " << std::this_thread::get_id() << " starting");
 
   uint32_t* vals[10];
   uint64_t alloc_count = 0;
@@ -144,7 +144,7 @@ void threadFunc(FreeList& pool, ros::atomic<bool>& done, ros::atomic<bool>& fail
       }
       else
       {
-        ROS_ERROR_STREAM("Thread " << boost::this_thread::get_id() << " failed to allocate");
+        std::cerr("Thread " << std::this_thread::get_id() << " failed to allocate");
       }
     }
 
@@ -154,7 +154,7 @@ void threadFunc(FreeList& pool, ros::atomic<bool>& done, ros::atomic<bool>& fail
       {
         if (*vals[i] != i)
         {
-          ROS_ERROR_STREAM("Thread " << boost::this_thread::get_id() << " val " << vals[i] << " " << i << " = " << *vals[i]);
+          std::cerr("Thread " << std::this_thread::get_id() << " val " << vals[i] << " " << i << " = " << *vals[i]);
           failed.store(true);
         }
 
@@ -165,33 +165,33 @@ void threadFunc(FreeList& pool, ros::atomic<bool>& done, ros::atomic<bool>& fail
     if (failed.load())
     {
 #if FREE_LIST_DEBUG
-      boost::mutex::scoped_lock lock(g_debug_mutex);
+      std::mutex::scoped_lock lock(g_debug_mutex);
       g_debug.push_back(*pool.getDebug());
 #endif
       return;
     }
   }
 
-  //ROS_INFO_STREAM("Thread " << boost::this_thread::get_id() << " allocated " << alloc_count << " blocks");
+  //ROS_INFO_STREAM("Thread " << std::this_thread::get_id() << " allocated " << alloc_count << " blocks");
 }
 
 TEST(FreeList, multipleThreads)
 {
-  const uint32_t thread_count = boost::thread::hardware_concurrency() * 2;
+  const uint32_t thread_count = std::thread::hardware_concurrency() * 2;
   FreeList pool(4, thread_count * 10);
   ros::atomic<bool> done(false);
   ros::atomic<bool> failed(false);
-  boost::thread_group tg;
-  boost::barrier bar(thread_count);
+  std::thread_group tg;
+  std::barrier bar(thread_count);
   for (uint32_t i = 0; i < thread_count; ++i)
   {
-    tg.create_thread(boost::bind(threadFunc, boost::ref(pool), boost::ref(done), boost::ref(failed), boost::ref(bar)));
+    tg.create_thread(std::bind(threadFunc, std::ref(pool), std::ref(done), std::ref(failed), std::ref(bar)));
   }
 
-  ros::WallTime start = ros::WallTime::now();
-  while (ros::WallTime::now() - start < ros::WallDuration(10.0))
+  auto start = std::chrono::high_resolution_clock::now();
+  while (std::chrono::high_resolution_clock::now() - start < std::chrono::duration<double>(10.0))
   {
-    ros::WallDuration(0.01).sleep();
+    std::this_thread::sleep_for(10ms);
 
     if (failed.load())
     {
@@ -230,7 +230,7 @@ TEST(FreeList, multipleThreads)
         break;
       }
 
-      ROS_ERROR_STREAM("[" << std::setw(20) << g_debug[ind].thread << "] " << *its[ind]);
+      std::cerr("[" << std::setw(20) << g_debug[ind].thread << "] " << *its[ind]);
       ++its[ind];
     }
   }

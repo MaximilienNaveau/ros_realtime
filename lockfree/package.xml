@@ -1,4 +1,5 @@
-<package>
+<?xml version="1.0"?>
+<package format="3">
   <name>lockfree</name>
   <version>1.0.25</version>
   <description>The lockfree package contains lock-free data structures for use in multithreaded programming.  These
@@ -15,28 +16,17 @@
   <author>Josh Faust</author>
 
   <!-- Dependencies which this package needs to build itself. -->
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
   <!-- Dependencies needed to compile this package. -->
-  <build_depend>rosatomic</build_depend>
-  <build_depend>rosconsole</build_depend>
-  <build_depend>roslib</build_depend>
-  <build_depend>allocators</build_depend>
-
-  <!-- Dependencies needed after this package is compiled. -->
-  <run_depend>rosatomic</run_depend>
-  <run_depend>rosconsole</run_depend>
-  <run_depend>roslib</run_depend>
-  <run_depend>allocators</run_depend>
+  <depend>rosatomic</depend>
+  <depend>allocators</depend>
 
   <!-- Dependencies needed only for running tests. -->
-  <!-- <test_depend>rosatomic</test_depend> -->
-  <!-- <test_depend>rosconsole</test_depend> -->
-  <!-- <test_depend>roslib</test_depend> -->
-  <!-- <test_depend>allocators</test_depend> -->
+  <test_depend>GTest</test_depend>
 
 <export>
-    <cpp lflags="-L${prefix}/lib -Wl,-rpath,${prefix}/lib -llockfree" cflags="-I${prefix}/include"/>
+    <build_type>ament_cmake</build_type>
 </export>
 
 </package>

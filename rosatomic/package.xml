@@ -1,4 +1,5 @@
-<package>
+<?xml version="1.0"?>
+<package format="3">
   <name>rosatomic</name>
   <version>1.0.25</version>
   <description>rosatomic provides the C++11-style atomic operations by pulling symbols from the proposed Boost.Atomic
@@ -12,11 +13,17 @@
   <url type="website">http://ros.org/wiki/rosatomic</url>
   <author>Josh Faust</author>
 
-  <buildtool_depend>catkin</buildtool_depend>
+    <!-- Dependencies which this package needs to build itself. -->
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
+  <!-- Dependencies needed to compile this package. -->
+  <depend>boost</depend>
+
+  <!-- Dependencies needed only for running tests. -->
+  <test_depend>GTest</test_depend>
 
 <export>
-    <cpp cflags="-I${prefix}/include"/>
+    <build_type>ament_cmake</build_type>
 </export>
 
 </package>

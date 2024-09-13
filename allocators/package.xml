@@ -1,4 +1,5 @@
-<package>
+<?xml version="1.0"?>
+<package format="3">
   <name>allocators</name>
   <version>1.0.25</version>
   <description>Contains aligned allocation functions, as well as an STL-compatible AlignedAllocator class.</description>
@@ -12,16 +13,18 @@
   <author>Josh Faust</author>
 
   <!-- Dependencies which this package needs to build itself. -->
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
   <!-- Dependencies needed to compile this package. -->
+  <depend>boost</depend>
 
   <!-- Dependencies needed after this package is compiled. -->
 
   <!-- Dependencies needed only for running tests. -->
+  <test_depend>GTest</test_depend>
 
 <export>
-    <cpp cflags="-I${prefix}/include"/>
+    <build_type>ament_cmake</build_type>
 </export>
 
 </package>

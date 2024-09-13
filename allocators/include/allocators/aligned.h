@@ -35,6 +35,7 @@
 #ifndef ALLOCATORS_ALIGNED_H
 #define ALLOCATORS_ALIGNED_H
 
+#include <new>
 #include <cstdlib>
 #include <boost/cstdint.hpp>
 

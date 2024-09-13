@@ -1,22 +1,27 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.22.1)
 project(allocators)
-find_package(catkin REQUIRED )
 
-#set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-#set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+#
+# Options
+#
+option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 
-include_directories(include ${Boost_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
-catkin_package(
-    DEPENDS include # TODO add dependencies
-    CATKIN_DEPENDS # TODO
-    INCLUDE_DIRS include # TODO include
-    LIBRARIES # TODO
+#
+# Handle dependencies by reading the package.xml
+#
+find_package(ament_cmake_auto REQUIRED)
+ament_auto_find_build_dependencies()
+
+add_library(${PROJECT_NAME} INTERFACE)
+target_include_directories(${PROJECT_NAME} PUBLIC INTERFACE
+  $<INSTALL_INTERFACE:include>
 )
 
-catkin_add_gtest(test_aligned_alloc test/test_aligned_alloc.cpp)## Generate added messages and services with any dependencies listed here
-target_link_libraries(test_aligned_alloc ${Boost_LIBRARIES} ${catkin_LIBRARIES})
+ament_auto_add_gtest(test_aligned_alloc test/test_aligned_alloc.cpp)## Generate added messages and services with any dependencies listed here
 #add_dependencies(test_aligned_alloc allocators_gencpp)
 
-install(DIRECTORY test/ DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
-
-install(DIRECTORY include/${PROJECT_NAME}/ DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+#
+# Handle install and exports.
+#
+install(DIRECTORY test/ DESTINATION share/${PROJECT_NAME})
+ament_auto_package()

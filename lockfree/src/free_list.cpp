@@ -33,6 +33,7 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 
+#include "assert.h"
 #include <lockfree/free_list.h>
 #include <allocators/aligned.h>
 
@@ -71,8 +72,8 @@ FreeList::~FreeList()
 
 void FreeList::initialize(uint32_t block_size, uint32_t block_count)
 {
-  ROS_ASSERT(!blocks_);
-  ROS_ASSERT(!next_);
+  assert(!blocks_);
+  assert(!next_);
 
   block_size_ = block_size;
   block_count_ = block_count;
@@ -111,7 +112,7 @@ void* FreeList::allocate()
   initDebug();
 #endif
 
-  ROS_ASSERT(blocks_);
+  assert(blocks_);
 
   while (true)
   {
@@ -180,8 +181,8 @@ void FreeList::free(void const* mem)
 
   uint32_t index = (static_cast<uint8_t const*>(mem) - blocks_) / block_size_;
 
-  ROS_ASSERT(((static_cast<uint8_t const*>(mem) - blocks_) % block_size_) == 0);
-  ROS_ASSERT(owns(mem));
+  assert(((static_cast<uint8_t const*>(mem) - blocks_) % block_size_) == 0);
+  assert(owns(mem));
 
   while (true)
   {

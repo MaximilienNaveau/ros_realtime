@@ -1,19 +1,26 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.22.1)
 project(rosatomic)
-find_package(catkin REQUIRED )
 
-catkin_package(
-    DEPENDS # TODO add dependencies
-    CATKIN_DEPENDS # TODO
-    INCLUDE_DIRS include include/boost include/ros # TODO include
-    LIBRARIES # TODO
+#
+# Options
+#
+option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+
+#
+# Handle dependencies by reading the package.xml
+#
+find_package(ament_cmake_auto REQUIRED)
+ament_auto_find_build_dependencies()
+
+add_library(${PROJECT_NAME} INTERFACE)
+target_include_directories(${PROJECT_NAME} PUBLIC INTERFACE
+  $<INSTALL_INTERFACE:include>
 )
-include_directories(include ${catkin_INCLUDE_DIRS})
-catkin_add_gtest(utest test/utest.cpp)
 
+ament_auto_add_gtest(utest test/utest.cpp)
 
-install(DIRECTORY include/ros include/boost DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION})
-
-#install(DIRECTORY include/ DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
-
-#install(DIRECTORY test/ DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+#
+# Handle install and exports.
+#
+install(DIRECTORY test/ DESTINATION share/${PROJECT_NAME})
+ament_auto_package()

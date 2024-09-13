@@ -1,20 +1,17 @@
 <?xml version="1.0"?>
-<package>
+<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="2">
   <name>ros_realtime</name>
   <version>1.0.25</version>
   <description>The ros_realtime package</description>
- 
-  <maintainer email="dash@clearpathrobotics.com">Devon Ash</maintainer>
- 
-  <license>BSD</license>
-  <buildtool_depend>catkin</buildtool_depend>
-
-  <run_depend>rosrt</run_depend>
-  <run_depend>lockfree</run_depend>
-  <run_depend>allocators</run_depend>
-  <run_depend>rosatomic</run_depend>
+   <maintainer email="dash@clearpathrobotics.com">Devon Ash</maintainer>
+   <license>BSD</license>
+  <!-- packages in my_project -->
+  <exec_depend>lockfree</exec_depend>
+  <exec_depend>allocators</exec_depend>
+  <exec_depend>rosatomic</exec_depend>
 
   <export>
-      <metapackage/>
+    <build_type>ament_cmake</build_type>
   </export>
 </package>
